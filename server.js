@@ -16,7 +16,7 @@ http.createServer(function (req, res) {
    .then(outputCss(res))
    .then(function() {
       time = Date.now() - time;
-      l("Finished request: " + Math.round(time,3));
+      l("Finished request("+(Math.round(time*10)/10)+"ms):" + req.url);
    })
    .fail(function(err) {
       l("Got Error: " + err);
