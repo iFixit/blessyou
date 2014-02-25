@@ -10,7 +10,6 @@ var parser = new less.Parser();
 
 http.createServer(function (req, res) {
    var time = process.hrtime();
-   l("Start request");
    readEntireBody(req)
    .then(parseLess)
    .then(outputCss(res))
@@ -20,7 +19,7 @@ http.createServer(function (req, res) {
       l("Finished request("+(Math.round(ms*10)/10)+"ms):" + req.url);
    })
    .fail(function(err) {
-      l("Got Error: " + err);
+      l("Got Error: " + req.url + "\n" +  err);
       res.statusCode=500;
       res.end(err)
    });
