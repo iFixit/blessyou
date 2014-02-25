@@ -10,13 +10,27 @@ var parser = new less.Parser();
 
 http.createServer(function (req, res) {
    var time = process.hrtime();
-   readEntireBody(req)
-   .then(parseLess)
+   var inLength;
+
+   if (req.method !== 'POST') {
+      res.statusCode = 404;
+      return res.end();
+   }
+
+   var body = readEntireBody(req);
+   body.then(function(body) {
+      // Capture the byte length for logging at the end
+      inLength = Buffer.byteLength(body)
+   })
+
+   body.then(parseLess)
    .then(outputCss(res))
-   .then(function() {
+   .then(function(css) {
       time = process.hrtime(time);
-      var ms = time[0]*1000 + time[1] / 1e6;
-      l("Finished request("+(Math.round(ms*10)/10)+"ms):" + req.url);
+      var ms = time[0]*1000 + time[1] / 1e6
+      var outLength = Buffer.byteLength(css)
+      var sizeMsg = round(inLength/1000) + "k -> " + round(outLength/1000) + "k"
+      l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
    })
    .fail(function(err) {
       l("Got Error: " + req.url + "\n" +  err);
@@ -53,7 +67,14 @@ function outputCss(res) {
       var css = parseTree.toCSS();
       res.writeHead(200, "Content-Type: text/css");
       res.end(css);
-      return Q.fcall(function(){});
+      return Q.fcall(function(){
+         return css;
+      });
    }
+}
+
+function round(num, places) {
+   var scale = Math.pow(10, places === undefined ? 1: places)
+   return Math.round(num*scale)/scale
 }
 
