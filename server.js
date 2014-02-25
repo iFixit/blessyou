@@ -9,14 +9,15 @@ l = console.log;
 var parser = new less.Parser();
 
 http.createServer(function (req, res) {
-   var time = Date.now();
+   var time = process.hrtime();
    l("Start request");
    readEntireBody(req)
    .then(parseLess)
    .then(outputCss(res))
    .then(function() {
-      time = Date.now() - time;
-      l("Finished request("+(Math.round(time*10)/10)+"ms):" + req.url);
+      time = process.hrtime(time);
+      var ms = time[0]*1000 + time[1] / 1e6;
+      l("Finished request("+(Math.round(ms*10)/10)+"ms):" + req.url);
    })
    .fail(function(err) {
       l("Got Error: " + err);
