@@ -1,0 +1,16 @@
+{
+   "name": "less-server",
+   "version": "0.0.1",
+   "author": "Daniel Beardsley <daniel.beardsley@gmail.com>",
+
+   "licenses": [{
+      "type": "MIT"
+   }],
+
+   "dependencies": {
+      "less": "1.6.3",
+      "q": "~1.0.0"
+   },
+
+   "main": "./server.js"
+}
