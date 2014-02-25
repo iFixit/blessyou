@@ -3,9 +3,8 @@ var fs   = require('fs')
    ,http = require('http')
    ,less = require('less')
    ,yargs= require('yargs')
-   ,port = args().port
-
-l = console.log;
+   ,argv = args()
+   ,l    = console.log;
 
 var parser = new less.Parser();
 
@@ -38,9 +37,9 @@ http.createServer(function (req, res) {
       res.statusCode = 500;
       res.end("" + err)
    });
-}).listen(port);
+}).listen(argv.port, argv.host);
 
-l("http server started on port: " + port); 
+l("http server listening on: " + argv.host + ":" + argv.port); 
 
 function readEntireBody(stream) {
    var deferred = Q.defer()
@@ -82,14 +81,11 @@ function round(num, places) {
 }
 
 
-var argv;
 function args() {
-   if (!argv) {
-      argv = yargs.usage("Usage: $0 --port=<port>")
-            .describe('port', 'tcp port to run the http server on.')
-            .demand('port')
-            .argv
-   }
-
-   return argv;
+   return yargs.usage("Usage: $0 --port=<port> [--host=<host-ip>]")
+      .describe('port', 'tcp port to run the http server on.')
+      .demand('port')
+      .describe('host', 'tcp host to accept connections from.')
+      .default('host', '127.0.0.1')
+      .argv
 }
