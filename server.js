@@ -2,7 +2,8 @@ var fs   = require('fs')
    ,Q    = require('q')
    ,http = require('http')
    ,less = require('less')
-   ,port = 8000
+   ,yargs= require('yargs')
+   ,port = args().port
 
 l = console.log;
 
@@ -37,7 +38,9 @@ http.createServer(function (req, res) {
       res.statusCode = 500;
       res.end("" + err)
    });
-}).listen(8000);
+}).listen(port);
+
+l("http server started on port: " + port); 
 
 function readEntireBody(stream) {
    var deferred = Q.defer()
@@ -78,3 +81,15 @@ function round(num, places) {
    return Math.round(num*scale)/scale
 }
 
+
+var argv;
+function args() {
+   if (!argv) {
+      argv = yargs.usage("Usage: $0 --port=<port>")
+            .describe('port', 'tcp port to run the http server on.')
+            .demand('port')
+            .argv
+   }
+
+   return argv;
+}
