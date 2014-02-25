@@ -20,8 +20,8 @@ http.createServer(function (req, res) {
    })
    .fail(function(err) {
       l("Got Error: " + req.url + "\n" +  err);
-      res.statusCode=500;
-      res.end(err)
+      res.statusCode = 500;
+      res.end("" + err)
    });
 }).listen(8000);
 
