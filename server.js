@@ -52,7 +52,7 @@ function parseLess(body) {
 function outputCss(res) {
    return function (parseTree) {
       var css = parseTree.toCSS();
-      res.statusCode = 200;
+      res.writeHead(200, "Content-Type: text/css");
       res.end(css);
       return Q.fcall(function(){});
    }
