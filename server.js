@@ -64,14 +64,36 @@ function readEntireBody(stream) {
 
 function parseLess(body) {
    var deferred = Q.defer()
-   var parser = new less.Parser();
+   var parser = new less.Parser(getParserOptions());
    parser.parse(body, deferred.makeNodeResolver());
    return deferred.promise;
 }
 
+function getParserOptions() {
+   return {
+      depends: false,
+      compress: false,
+      cleancss: false,
+      max_line_len: -1,
+      optimization: 1,
+      silent: false,
+      verbose: false,
+      lint: false,
+      paths: [],
+      color: false,
+      strictImports: false,
+      insecure: false,
+      rootpath: '',
+      relativeUrls: false,
+      ieCompat: true,
+      strictMath: false,
+      strictUnits: false
+   }
+}
+
 function outputCss(res) {
    return function (parseTree) {
-      var css = parseTree.toCSS();
+      var css = parseTree.toCSS(getParserOptions());
       res.writeHead(200, "Content-Type: text/css");
       res.end(css);
       return Q.fcall(function(){
