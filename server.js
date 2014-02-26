@@ -33,9 +33,10 @@ http.createServer(function (req, res) {
       l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
    })
    .fail(function(err) {
-      l("Got Error: " + req.url + "\n" +  err);
+      var message = less.formatError(err, {color:false})
+      l("Got Error: " + req.url + "\n" +  message)
       res.statusCode = 500;
-      res.end("" + err)
+      res.end("" + message)
    });
 }).listen(argv.port, argv.host);
 
