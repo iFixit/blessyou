@@ -4,6 +4,7 @@ var fs   = require('fs')
    ,less = require('less')
    ,yargs= require('yargs')
    ,argv = args()
+   ,parserOptions = require('./parser-options.js')
    ,l    = console.log;
 
 var parser = new less.Parser();
@@ -64,36 +65,14 @@ function readEntireBody(stream) {
 
 function parseLess(body) {
    var deferred = Q.defer()
-   var parser = new less.Parser(getParserOptions());
+   var parser = new less.Parser(parserOptions);
    parser.parse(body, deferred.makeNodeResolver());
    return deferred.promise;
 }
 
-function getParserOptions() {
-   return {
-      depends: false,
-      compress: false,
-      cleancss: false,
-      max_line_len: -1,
-      optimization: 1,
-      silent: false,
-      verbose: false,
-      lint: false,
-      paths: [],
-      color: false,
-      strictImports: false,
-      insecure: false,
-      rootpath: '',
-      relativeUrls: false,
-      ieCompat: true,
-      strictMath: false,
-      strictUnits: false
-   }
-}
-
 function outputCss(res) {
    return function (parseTree) {
-      var css = parseTree.toCSS(getParserOptions());
+      var css = parseTree.toCSS(parserOptions);
       res.writeHead(200, "Content-Type: text/css");
       res.end(css);
       return Q.fcall(function(){
