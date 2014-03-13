@@ -13,5 +13,7 @@
       "q": "~1.0.0"
    },
 
-   "main": "./server.js"
+   "main": "./server.js",
+
+   "bin" : "./app.js"
 }
