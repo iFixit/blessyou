@@ -1,6 +1,7 @@
 var Q    = require('q')
    ,http = require('http')
    ,less = require('less')
+   ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
    ,l    = console.log;
 
@@ -14,7 +15,7 @@ module.exports = function() {
          return res.end();
       }
 
-      var body = readEntireBody(req);
+      var body = getBody(req);
       body.then(function(body) {
          // Capture the byte length for logging at the end
          inLength = Buffer.byteLength(body)
@@ -36,22 +37,6 @@ module.exports = function() {
          res.end("" + message)
       });
    })
-}
-
-function readEntireBody(stream) {
-   var deferred = Q.defer()
-   var body = ''
-   stream.setEncoding('utf8')
-   stream.on('data', function (chunk) {
-      body += chunk
-   });
-   stream.on('end', function () {
-      deferred.resolve(body);
-   });
-   stream.on('close', function (err) {
-      deferred.reject(err);
-   });
-   return deferred.promise;
 }
 
 function parseLess(body) {
