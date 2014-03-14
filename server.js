@@ -1,4 +1,5 @@
 var Q    = require('q')
+   ,connect = require('connect')
    ,http = require('http')
    ,less = require('less')
    ,getBody = require('./get-body.js')
@@ -7,58 +8,71 @@ var Q    = require('q')
    ,l    = console.log;
 
 module.exports = function() {
-   return http.createServer(function (req, res) {
-      var time = process.hrtime();
-      var inLength;
+   var app = connect()
+   .use(denyNonPosts)
+   .use(receiveBody)
+   .use(connect.query())
+   .use('/session', createSession)
+   .use(convertLess)
 
-      if (req.method !== 'POST') {
-         res.statusCode = 404;
-         return res.end();
-      }
+   return http.createServer(app)
+}
 
-      var body = getBody(req);
-      body.then(function(body) {
-         // Capture the byte length for logging at the end
-         inLength = Buffer.byteLength(body)
-      }).done()
+function denyNonPosts(req, res, next) {
+   if (req.method !== 'POST') {
+      res.statusCode = 404;
+      return res.end();
+   }
+   next();
+}
 
-      if (req.url.indexOf("/session") == 0) {
-         body.then(function(less) {
-            return sessions.create(less);
-         }).then(function(session) {
-            res.end(session.token)
-         }).fail(handleFailure);
-         return;
-      }
-
-      body.then(parseLess)
-      .then(function(ast) {
-         req.params = require('url').parse(req.url, true).query;
-         if (req.params.session) {
-            var session = sessions.get(req.params.session);
-            ast.rules = session.ast.rules.concat(ast.rules);
-         }
-         return ast;
-      })
-      .then(outputCss(res))
-      .then(function(css) {
-         time = process.hrtime(time);
-         var ms = time[0]*1000 + time[1] / 1e6
-         var outLength = Buffer.byteLength(css)
-         var sizeMsg = round(inLength/1000) + "k -> " + round(outLength/1000) + "k"
-         l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
-      })
-      .fail(handleFailure);
-
-      function handleFailure(err) {
-         var message = less.formatError(err, {color:false})
-         l("Got Error: " + req.url + "\n" +  message)
-         res.statusCode = 500;
-         res.end("" + message)
-      }
+function receiveBody(req, res, next) {
+   req.time = process.hrtime();
+   getBody(req).then(function(body) {
+      req.body = body;
+      next();
    })
 }
 
+function createSession(req, res, next) {
+   sessions.create(req.body)
+   .then(function(session) {
+      res.end(session.token)
+   }).fail(handleFailure(res, req));
+}
+
+function convertLess(req, res, next) {
+   var time;
+   var inLength = req.body.length;
+
+   parseLess(req.body)
+   .then(function(ast) {
+      if (req.query.session) {
+         var session = sessions.get(req.query.session);
+         ast.rules = session.ast.rules.concat(ast.rules);
+      }
+      return ast;
+   })
+   .then(outputCss(res))
+   .then(function(css) {
+      time = process.hrtime(req.time);
+      var ms = time[0]*1000 + time[1] / 1e6
+      var outLength = Buffer.byteLength(css)
+      var sizeMsg = round(inLength/1000) + "k -> " + round(outLength/1000) + "k"
+      l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
+   })
+   .fail(handleFailure(req, res));
+}
+
+function handleFailure(req, res) {
+   return function (err) {
+      var message = less.formatError(err, {color:false})
+      l("Got Error: " + req.url + "\n" +  message)
+      res.statusCode = 500;
+      res.end("" + message)
+   }
+}
+   
 function parseLess(body) {
    var deferred = Q.defer()
    var parser = new less.Parser(parserOptions);
