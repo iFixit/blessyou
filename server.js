@@ -3,6 +3,7 @@ var Q    = require('q')
    ,less = require('less')
    ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
+   ,sessions = require('./sessions.js')()
    ,l    = console.log;
 
 module.exports = function() {
@@ -19,9 +20,26 @@ module.exports = function() {
       body.then(function(body) {
          // Capture the byte length for logging at the end
          inLength = Buffer.byteLength(body)
-      })
+      }).done()
+
+      if (req.url.indexOf("/session") == 0) {
+         body.then(function(less) {
+            return sessions.create(less);
+         }).then(function(session) {
+            res.end(session.token)
+         }).fail(handleFailure);
+         return;
+      }
 
       body.then(parseLess)
+      .then(function(ast) {
+         req.params = require('url').parse(req.url, true).query;
+         if (req.params.session) {
+            var session = sessions.get(req.params.session);
+            ast.rules = session.ast.rules.concat(ast.rules);
+         }
+         return ast;
+      })
       .then(outputCss(res))
       .then(function(css) {
          time = process.hrtime(time);
@@ -30,12 +48,14 @@ module.exports = function() {
          var sizeMsg = round(inLength/1000) + "k -> " + round(outLength/1000) + "k"
          l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
       })
-      .fail(function(err) {
+      .fail(handleFailure);
+
+      function handleFailure(err) {
          var message = less.formatError(err, {color:false})
          l("Got Error: " + req.url + "\n" +  message)
          res.statusCode = 500;
          res.end("" + message)
-      });
+      }
    })
 }
 
