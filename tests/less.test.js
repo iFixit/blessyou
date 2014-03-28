@@ -17,7 +17,19 @@ describe("Less compile via http", function() {
                         "}\n"].join("\n");
       post(port, '/', less)
       .then(function(body) {
-         assert.equal(expectedCss, body);
+         assert.equal(body, expectedCss);
+         done();
+      }).done();
+   });
+
+   it("should translate query params to parser options", function(done) {
+      var less = "a { x: url(http://thing) }";
+      var expectedCss = ["a {",
+                        "  x: url(http://thing?extra);",
+                        "}\n"].join("\n");
+      post(port, '/?options={"urlArgs":"extra"}', less)
+      .then(function(body) {
+         assert.equal(body, expectedCss);
          done();
       }).done();
    });

@@ -10,14 +10,16 @@ module.exports = function() {
       get: getSession
    };
 
-   function getOrCreateAst(lessCode) {
+   function getOrCreateAst(lessCode, parseOverrides) {
       var token = md5(lessCode);
       
-      return Q.when(getSession(token) || createSession(lessCode, token));
+      return Q.when(
+       getSession(token) ||
+       createSession(lessCode, parseOverrides, token));
    }
 
-   function createSession(lessCode, token) {
-      return parseLess(lessCode).then(function(syntaxTree) {
+   function createSession(lessCode, parseOverrides, token) {
+      return parseLess(lessCode, parseOverrides).then(function(syntaxTree) {
          sessions[token] = {
             token: token,
             ast: syntaxTree,
@@ -49,10 +51,10 @@ module.exports = function() {
 }
 
 
-function parseLess(body) {
+function parseLess(lessCode, parseOverrides) {
    var deferred = Q.defer()
-   var parser = new less.Parser(parserOptions);
-   parser.parse(body, deferred.makeNodeResolver());
+   var parser = new less.Parser(parserOptions(parseOverrides));
+   parser.parse(lessCode, deferred.makeNodeResolver());
    return deferred.promise;
 }
 
