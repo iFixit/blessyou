@@ -5,10 +5,6 @@ var less = require('less')
 
 module.exports = function() {
    var sessions = {};
-   return {
-      create: getOrCreateAst,
-      get: getSession
-   };
 
    function getOrCreateAst(lessCode) {
       var token = md5(lessCode);
@@ -46,6 +42,11 @@ module.exports = function() {
          }
       });
    }, 60 * 1000);
+
+   return {
+      create: getOrCreateAst,
+      get: getSession
+   };
 }
 
 
