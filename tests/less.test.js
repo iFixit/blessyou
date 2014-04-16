@@ -1,3 +1,6 @@
+// disable logging during tests
+require('../log.js').log = function(){};
+
 var fs   = require('fs')
    ,BlessYou = require('../server.js')
    ,assert = require('assert')
