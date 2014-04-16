@@ -5,7 +5,7 @@ var Q    = require('q')
    ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
    ,sessions = require('./sessions.js')()
-   ,l    = console.log;
+   ,l    = require('./log.js').log;
 
 module.exports = function() {
    var app = connect()
