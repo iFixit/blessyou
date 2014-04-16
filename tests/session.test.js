@@ -27,6 +27,16 @@ describe("Less global variable sessions", function() {
       });
    });
 
+   it("should fail on missing session", function(done) {
+      var less = "a { top: 1; }";
+      post(port, '/?session=doesntexist', less)
+      .then(function(body) {
+         done(new Error("Missing session should produce an error"));
+      }, function(body) {
+         done();
+      }).done();
+   });
+
    after(function() {
       server.close();
    });

@@ -49,6 +49,9 @@ function convertLess(req, res, next) {
    .then(function(ast) {
       if (req.query.session) {
          var session = sessions.get(req.query.session);
+         if (!session || !session.ast) {
+            throw new Error("Session "+req.query.session+" not found!");
+         }
          ast.rules = session.ast.rules.concat(ast.rules);
       }
       return ast;

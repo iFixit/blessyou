@@ -10,7 +10,12 @@ module.exports = function post(port, path, body) {
       path: path,
       method: 'POST'
    }, function(res) {
-      deferred.resolve(getBody(res));
+      var body = getBody(res);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+         deferred.resolve(body);
+      } else {
+         deferred.reject(body);
+      }
    });
 
    request.end(body);
