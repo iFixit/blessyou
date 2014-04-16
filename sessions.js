@@ -37,7 +37,7 @@ module.exports = function() {
    setInterval(function() {
       var now = Date.now();
       Object.keys(sessions).forEach(function(token) {
-         if (sessions[token].expires > now) {
+         if (sessions[token].expires < now) {
             delete sessions[token];
          }
       });
