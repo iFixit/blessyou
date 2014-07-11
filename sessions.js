@@ -61,7 +61,7 @@ function md5(string) {
    var crypto = require('crypto');
    var hasher = crypto.createHash('md5');
    hasher.update(string);
-   return hasher.digest('base64');
+   return hasher.digest('hex');
 }
 
 function getExpires() {
