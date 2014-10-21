@@ -49,3 +49,16 @@ process immensely, especially for small files.
 
 Sessions expire after an hour of unuse which should be enough for most cases.
 
+### Less Parser Options
+
+Less parser options can be passed through using this psedocode:
+
+    var options = {
+       compress: false
+       // any other options less supports
+    };
+    var lessCode = "a { b { color:red; } }";
+    
+    options = encodeUriComponent(JSON.stringify(options));
+    var css = post("localhost:8000/?options=" + options, lessCode)
+

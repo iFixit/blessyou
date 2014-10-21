@@ -12,6 +12,7 @@ module.exports = function() {
    .use(denyNonPosts)
    .use(receiveBody)
    .use(connect.query())
+   .use(extractParserOptions)
    .use('/session', createSession)
    .use(convertLess)
 
@@ -34,8 +35,15 @@ function receiveBody(req, res, next) {
    })
 }
 
+function extractParserOptions(req, res, next) {
+   if (req.query.options) {
+      req.parserOptions = parserOptions(JSON.parse(req.query.options || null))
+   }
+   next();
+}
+
 function createSession(req, res, next) {
-   sessions.create(req.body)
+   sessions.create(req.body, req.parserOptions)
    .then(function(session) {
       res.end(session.token)
    }).fail(handleFailure(res, req));
@@ -45,7 +53,7 @@ function convertLess(req, res, next) {
    var time;
    var inLength = req.body.length;
 
-   parseLess(req.body)
+   parseLess(req)
    .then(function(ast) {
       if (req.query.session) {
          var session = sessions.get(req.query.session);
@@ -56,7 +64,7 @@ function convertLess(req, res, next) {
       }
       return ast;
    })
-   .then(outputCss(res))
+   .then(outputCss(req, res))
    .then(function(css) {
       time = process.hrtime(req.time);
       var ms = time[0]*1000 + time[1] / 1e6
@@ -76,16 +84,16 @@ function handleFailure(req, res) {
    }
 }
    
-function parseLess(body) {
+function parseLess(req) {
    var deferred = Q.defer()
-   var parser = new less.Parser(parserOptions);
-   parser.parse(body, deferred.makeNodeResolver());
+   var parser = new less.Parser(req.parserOptions);
+   parser.parse(req.body, deferred.makeNodeResolver());
    return deferred.promise;
 }
 
-function outputCss(res) {
+function outputCss(req, res) {
    return function (parseTree) {
-      var css = parseTree.toCSS(parserOptions);
+      var css = parseTree.toCSS(req.parserOptions);
       res.writeHead(200, "Content-Type: text/css");
       res.end(css);
       return Q.fcall(function(){
