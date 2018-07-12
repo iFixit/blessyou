@@ -16,12 +16,12 @@ module.exports = function() {
 
    function createSession(lessCode, parseOverrides, token) {
       return parseLess(lessCode, parseOverrides).then(function(syntaxTree) {
-         sessions[token] = {
+         var session = new Session({
             token: token,
             ast: syntaxTree,
             expires: getExpires()
-         };
-         return sessions[token];
+         });
+         return sessions[token] = session;
       });
    }
 
@@ -68,4 +68,8 @@ function md5(string) {
 
 function getExpires() {
    return Date.now() + expireTime;
+}
+
+function Session(data) {
+   Object.assign(this, data);
 }
