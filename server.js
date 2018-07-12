@@ -14,6 +14,7 @@ module.exports = function() {
    .use(connect.query())
    .use(extractParserOptions)
    .use('/session', createSession)
+   .use(lookupSession)
    .use(convertLess)
 
    return http.createServer(app)
@@ -49,18 +50,26 @@ function createSession(req, res, next) {
    }).fail(handleFailure(res, req));
 }
 
+function lookupSession(req, res, next) {
+   if (req.query.session) {
+      var session = sessions.get(req.query.session);
+      if (!session || !session.ast) {
+         var error = new Error("Session "+req.query.session+" not found!")
+         return handleFailure(req, res)(error);
+      }
+      req.session = session;
+   }
+   next();
+}
+
 function convertLess(req, res, next) {
    var time;
    var inLength = req.body.length;
 
    parseLess(req)
    .then(function(ast) {
-      if (req.query.session) {
-         var session = sessions.get(req.query.session);
-         if (!session || !session.ast) {
-            throw new Error("Session "+req.query.session+" not found!");
-         }
-         ast.rules = session.ast.rules.concat(ast.rules);
+      if (req.session) {
+         ast.rules = req.session.ast.rules.concat(ast.rules);
       }
       return ast;
    })
