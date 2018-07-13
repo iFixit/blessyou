@@ -73,6 +73,7 @@ function convertLess(req, res, next) {
       }
       return ast;
    })
+   .then(renderCss(req, res))
    .then(outputCss(req, res))
    .then(function(css) {
       time = process.hrtime(req.time);
@@ -101,14 +102,17 @@ function parseLess(req) {
 }
 
 function outputCss(req, res) {
-   return function (parseTree) {
-      var css = parseTree.toCSS(req.parserOptions);
+   return function (css) {
       res.writeHead(200, "Content-Type: text/css");
       res.end(css);
-      return Q.fcall(function(){
-         return css;
-      });
+      return css;
    }
+}
+
+function renderCss(req, res) {
+   return function (parseTree) {
+      return parseTree.toCSS(req.parserOptions);
+   };
 }
 
 function round(num, places) {
