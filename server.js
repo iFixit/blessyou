@@ -63,9 +63,6 @@ function lookupSession(req, res, next) {
 }
 
 function convertLess(req, res, next) {
-   var time;
-   var inLength = req.body.length;
-
    parseLess(req)
    .then(function(ast) {
       if (req.session) {
@@ -75,13 +72,7 @@ function convertLess(req, res, next) {
    })
    .then(renderCss(req, res))
    .then(outputCss(req, res))
-   .then(function(css) {
-      time = process.hrtime(req.time);
-      var ms = time[0]*1000 + time[1] / 1e6
-      var outLength = Buffer.byteLength(css)
-      var sizeMsg = round(inLength/1000) + "k -> " + round(outLength/1000) + "k"
-      l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
-   })
+   .then(logRequest(req, res))
    .fail(handleFailure(req, res));
 }
 
@@ -113,6 +104,16 @@ function renderCss(req, res) {
    return function (parseTree) {
       return parseTree.toCSS(req.parserOptions);
    };
+}
+
+function logRequest(req, res) {
+   return function(css) {
+      var time = process.hrtime(req.time);
+      var ms = time[0]*1000 + time[1] / 1e6
+      var outLength = Buffer.byteLength(css)
+      var sizeMsg = round(req.body.length/1000) + "k -> " + round(outLength/1000) + "k"
+      l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
+   }
 }
 
 function round(num, places) {
