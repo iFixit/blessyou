@@ -5,10 +5,12 @@ var Q    = require('q')
    ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
    ,sessions = require('./sessions.js')()
-   ,cache = require('./cache.js')()
+   ,Cache = require('./cache.js')
+   ,DummyCache = require('./dummy-cache.js')
+   ,cache = null
    ,l    = require('./log.js').log;
 
-module.exports = function() {
+module.exports = function(config) {
    var app = connect()
    .use(denyNonPosts)
    .use(receiveBody)
@@ -17,6 +19,14 @@ module.exports = function() {
    .use('/session', createSession)
    .use(lookupSession)
    .use(convertLess)
+
+   if (!config || !config.memcache) {
+      cache = DummyCache;
+      l("Using Dummy Cache");
+   } else {
+      l("Using memcache");
+      cache = Cache(config);
+   }
 
    return http.createServer(app)
 }
