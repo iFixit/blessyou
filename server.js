@@ -64,12 +64,7 @@ function lookupSession(req, res, next) {
 
 function convertLess(req, res, next) {
    parseLess(req)
-   .then(function(ast) {
-      if (req.session) {
-         ast.rules = req.session.ast.rules.concat(ast.rules);
-      }
-      return ast;
-   })
+   .then(includeSessionContents(req))
    .then(renderCss(req, res))
    .then(outputCss(req, res))
    .then(logRequest(req, res))
@@ -90,6 +85,15 @@ function parseLess(req) {
    var parser = new less.Parser(req.parserOptions);
    parser.parse(req.body, deferred.makeNodeResolver());
    return deferred.promise;
+}
+
+function includeSessionContents(req) {
+   return function(ast) {
+      if (req.session) {
+         ast.rules = req.session.ast.rules.concat(ast.rules);
+      }
+      return ast;
+   }
 }
 
 function outputCss(req, res) {
