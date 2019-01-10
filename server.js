@@ -63,12 +63,16 @@ function lookupSession(req, res, next) {
 }
 
 function convertLess(req, res, next) {
-   parseLess(req)
-   .then(includeSessionContents(req))
-   .then(renderCss(req, res))
+   getCssForRequest(req, res)
    .then(outputCss(req, res))
    .then(logRequest(req, res))
    .fail(handleFailure(req, res));
+}
+
+function getCssForRequest(req, res) {
+   return parseLess(req)
+   .then(includeSessionContents(req))
+   .then(renderCss(req))
 }
 
 function handleFailure(req, res) {
@@ -104,7 +108,7 @@ function outputCss(req, res) {
    }
 }
 
-function renderCss(req, res) {
+function renderCss(req) {
    return function (parseTree) {
       return parseTree.toCSS(req.parserOptions);
    };
