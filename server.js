@@ -88,6 +88,7 @@ function handleFailure(req, res) {
    return function (err) {
       var message = less.formatError(err, {color:false})
       l("Got Error: " + req.url + "\n" +  message)
+      l(err);
       res.statusCode = 500;
       res.end("" + message)
    }
