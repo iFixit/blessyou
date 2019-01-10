@@ -5,6 +5,7 @@ var Q    = require('q')
    ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
    ,sessions = require('./sessions.js')()
+   ,cache = require('./cache.js')()
    ,l    = require('./log.js').log;
 
 module.exports = function() {
@@ -47,7 +48,7 @@ function createSession(req, res, next) {
    sessions.create(req.body, req.parserOptions)
    .then(function(session) {
       res.end(session.token)
-   }).fail(handleFailure(res, req));
+   }).catch(handleFailure(res, req));
 }
 
 function lookupSession(req, res, next) {
@@ -66,13 +67,21 @@ function convertLess(req, res, next) {
    getCssForRequest(req, res)
    .then(outputCss(req, res))
    .then(logRequest(req, res))
-   .fail(handleFailure(req, res));
+   .catch(handleFailure(req, res));
 }
 
 function getCssForRequest(req, res) {
+   return cache.getCachedResponse(req)
+   .then(function(cachedCss) {
+      return cachedCss || parseAndRenderCss(req)
+   })
+}
+
+function parseAndRenderCss(req) {
    return parseLess(req)
    .then(includeSessionContents(req))
    .then(renderCss(req))
+   .then(storeInCache(req))
 }
 
 function handleFailure(req, res) {
@@ -111,6 +120,12 @@ function outputCss(req, res) {
 function renderCss(req) {
    return function (parseTree) {
       return parseTree.toCSS(req.parserOptions);
+   };
+}
+
+function storeInCache(req) {
+   return function(css) {
+      return cache.setCachedResponse(req, css)
    };
 }
 
