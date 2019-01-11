@@ -5,7 +5,6 @@ var Q    = require('q')
    ,getBody = require('./get-body.js')
    ,parserOptions = require('./parser-options.js')
    ,sessions = require('./sessions.js')()
-   ,Cache = require('./cache.js')
    ,DummyCache = require('./dummy-cache.js')
    ,cache = null
    ,l    = require('./log.js').log;
@@ -20,12 +19,10 @@ module.exports = function(config) {
    .use(lookupSession)
    .use(convertLess)
 
-   if (!config || !config.memcache) {
-      cache = DummyCache;
+   cache = config && config.cache;
+   if (!cache) {
       l("Using Dummy Cache");
-   } else {
-      l("Using memcache");
-      cache = Cache(config.memcache);
+      cache = DummyCache;
    }
 
    return http.createServer(app)
