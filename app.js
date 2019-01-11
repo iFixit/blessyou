@@ -3,6 +3,7 @@ var BlessYou = require('./server.js')
    ,argv = args()
    ,fs   = require('fs')
    ,Cache = require('./cache.js')
+   ,Memcached = require('memcached')
    ,l    = console.log;
 
 function args() {
@@ -19,13 +20,13 @@ function args() {
 
 function getCacheFromArgs() {
    if (argv['memcache-server']) {
-      const memcache = {
-         server: argv['memcache-server'],
+      const config = {
+         memcache: new Memcached(argv['memcache-server']),
          expireTime: argv['memcache-expire-time']
       }
 
       l("Using memcache");
-      return Cache(memcache);
+      return Cache(config);
    }
 }
 

@@ -1,8 +1,7 @@
 const l = require('./log.js').log;
-const Memcached = require('memcached');
 
 module.exports = function Cache(config) {
-   const memcache = new Memcached(config.server || '127.0.0.1:11211');
+   const memcache = config.memcache;
    const expireTime = config.expireTime || 86400;
 
    return {
