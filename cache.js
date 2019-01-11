@@ -37,7 +37,7 @@ function getCacheKey(req) {
    return md5([
       req.session && req.session.token,
       req.body,
-      JSON.stringify(req.parseOptions) || ''
+      JSON.stringify(req.parserOptions) || ''
    ]);
 }
 
