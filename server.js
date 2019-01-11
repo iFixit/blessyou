@@ -26,7 +26,11 @@ module.exports = function(config) {
       cache = DummyCache;
    }
 
-   return http.createServer(app)
+   const server = http.createServer(app)
+   server.on('close', () => {
+      sessions.close();
+   });
+   return server;
 
    function denyNonPosts(req, res, next) {
       if (req.method !== 'POST') {

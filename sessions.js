@@ -36,7 +36,7 @@ module.exports = function() {
    }
 
    // Setup session expiration
-   setInterval(function() {
+   const interval = setInterval(function() {
       var now = Date.now();
       Object.keys(sessions).forEach(function(token) {
          if (sessions[token].expires < now) {
@@ -47,7 +47,8 @@ module.exports = function() {
 
    return {
       create: getOrCreateAst,
-      get: getSession
+      get: getSession,
+      close: () => clearInterval(interval)
    };
 }
 
