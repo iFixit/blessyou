@@ -25,7 +25,7 @@ module.exports = function(config) {
       l("Using Dummy Cache");
    } else {
       l("Using memcache");
-      cache = Cache(config);
+      cache = Cache(config.memcache);
    }
 
    return http.createServer(app)
@@ -146,7 +146,8 @@ function logRequest(req, res) {
       var ms = time[0]*1000 + time[1] / 1e6
       var outLength = Buffer.byteLength(css)
       var sizeMsg = round(req.body.length/1000) + "k -> " + round(outLength/1000) + "k"
-      l("("+round(ms)+"ms - "+sizeMsg+"):" + req.url)
+      var cacheMsg = req.fromCache ? 'hit' : 'miss';
+      l("("+round(ms)+"ms - "+sizeMsg+" cache:"+cacheMsg+"):" + req.url)
    }
 }
 

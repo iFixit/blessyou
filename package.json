@@ -3,27 +3,24 @@
    "version": "0.1.0",
    "author": "Daniel Beardsley <daniel.beardsley@gmail.com>",
    "repository": "https://github.com/iFixit/blessyou",
-
-   "licenses": [{
-      "type": "MIT"
-   }],
-
+   "licenses": [
+      {
+         "type": "MIT"
+      }
+   ],
    "dependencies": {
       "connect": "~2.14.2",
       "less": "1.6.3",
-      "yargs": "~1.1.3",
-      "q": "~1.0.0"
+      "memcached": "^2.2.2",
+      "q": "~1.0.0",
+      "yargs": "~1.1.3"
    },
-
    "devDependencies": {
       "mocha": "~1.17.0"
    },
-
    "main": "./server.js",
-
-   "bin" : "./app.js",
-
-   "scripts" : {
+   "bin": "./app.js",
+   "scripts": {
       "test": "mocha -C tests"
    }
 }

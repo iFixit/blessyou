@@ -1,26 +1,45 @@
+const l = require('./log.js').log;
+const Memcached = require('memcached');
+
 module.exports = function Cache(config) {
+   const memcache = new Memcached(config.server || '127.0.0.1:11211');
+   const expireTime = config.expireTime || 86400;
+
    return {
+      // Returns a promise for the value from cache (null on a miss)
       getCachedResponse: function(req) {
          return new Promise(function(resolve, reject) {
-            req.fromCache = false;
-            req.cacheKey = getCacheKey(req.session, req.body, req.parserOptions);
-            resolve(null);
+            req.cacheKey = getCacheKey(req);
+            memcache.get(req.cacheKey, (err, data) => {
+               req.fromCache = !!(!err && data);
+               if (err) {
+                  l("Cache error: " + err);
+               }
+               resolve(data || null);
+            });
          })
       },
 
+      // Stores the value in the cache and returns a promise to the same value
       setCachedResponse: function(req, css) {
-         if (req.fromCache) {
-            return css;
-         }
          return new Promise(function(resolve, reject) {
-            resolve(css);
+            if (req.fromCache) {
+               return resolve(css);
+            }
+            memcache.set(req.cacheKey, css, expireTime, (err, data) => {
+               resolve(css);
+            });
          })
       }
    }
 }
 
-function getCacheKey(session, lessCode, parseOptions) {
-   return md5([lessCode, JSON.stringify(parseOptions) || '']);
+function getCacheKey(req) {
+   return md5([
+      req.session && req.session.token,
+      req.body,
+      JSON.stringify(req.parseOptions) || ''
+   ]);
 }
 
 function md5(strings) {
