@@ -65,7 +65,7 @@ function lookupSession(req, res, next) {
    if (req.query.session) {
       var session = sessions.get(req.query.session);
       if (!session || !session.ast) {
-         var error = new Error("Session "+req.query.session+" not found!")
+         var error = "Session "+req.query.session+" not found!";
          return handleFailure(req, res)(error);
       }
       req.session = session;
