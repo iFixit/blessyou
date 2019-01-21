@@ -5,7 +5,7 @@ var fs   = require('fs')
    ,BlessYou = require('../server.js')
    ,assert = require('assert')
    ,post = require('./post.js')
-   ,port = 38475
+   ,port = 38474
 
 describe("Less compile via http", function() {
    var server = new BlessYou();

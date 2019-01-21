@@ -16,12 +16,12 @@ module.exports = function() {
 
    function createSession(lessCode, parseOverrides, token) {
       return parseLess(lessCode, parseOverrides).then(function(syntaxTree) {
-         sessions[token] = {
+         var session = new Session({
             token: token,
             ast: syntaxTree,
             expires: getExpires()
-         };
-         return sessions[token];
+         });
+         return sessions[token] = session;
       });
    }
 
@@ -36,7 +36,7 @@ module.exports = function() {
    }
 
    // Setup session expiration
-   setInterval(function() {
+   const interval = setInterval(function() {
       var now = Date.now();
       Object.keys(sessions).forEach(function(token) {
          if (sessions[token].expires < now) {
@@ -47,7 +47,8 @@ module.exports = function() {
 
    return {
       create: getOrCreateAst,
-      get: getSession
+      get: getSession,
+      close: () => clearInterval(interval)
    };
 }
 
@@ -68,4 +69,8 @@ function md5(string) {
 
 function getExpires() {
    return Date.now() + expireTime;
+}
+
+function Session(data) {
+   Object.assign(this, data);
 }

@@ -2,9 +2,9 @@ var BlessYou = require('./server.js')
    ,yargs= require('yargs')
    ,argv = args()
    ,fs   = require('fs')
+   ,Cache = require('./cache.js')
+   ,Memcached = require('memcached')
    ,l    = console.log;
-
-var server = new BlessYou();
 
 function args() {
    return yargs.usage("Usage: $0 --port=<port> [--host=<host-ip>] [--pid-file=path]")
@@ -12,9 +12,27 @@ function args() {
       .demand('port')
       .describe('host', 'tcp host to accept connections from.')
       .default('host', '127.0.0.1')
+      .describe('memcache-server', 'i.e. 127.0.0.1:11211')
+      .describe('memcache-expire-time', 'expire time in seconds for compiled css stored in memcache')
       .describe('pid-file', 'file path to save the current pid in')
       .argv
 }
+
+function getCacheFromArgs() {
+   if (argv['memcache-server']) {
+      const config = {
+         memcache: new Memcached(argv['memcache-server']),
+         expireTime: argv['memcache-expire-time']
+      }
+
+      l("Using memcache");
+      return Cache(config);
+   }
+}
+
+argv.cache = getCacheFromArgs()
+
+var server = new BlessYou(argv);
 
 server.listen(argv.port, argv.host, function() {
    l("http server listening on: " + argv.host + ":" + argv.port); 
