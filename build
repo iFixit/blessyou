@@ -1,0 +1,5 @@
+#!/bin/bash -ex
+
+docker build \
+ -t ${DEV_ECR_IMAGE_TAG:-blessyou}:${GO_REVISION_BLESSYOU_GIT:-latest} \
+ .
