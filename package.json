@@ -10,7 +10,7 @@
    ],
    "dependencies": {
       "connect": "~2.14.2",
-      "less": "1.6.3",
+      "less": "^3.11.1",
       "memcached": "~2.2.2",
       "q": "~1.0.0",
       "yargs": "~1.1.3"
