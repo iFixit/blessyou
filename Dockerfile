@@ -1,9 +1,6 @@
-FROM alpine 
+FROM node:16-alpine
 
 MAINTAINER Daryl "daryl@ifixit.com"
-
-RUN apk update && apk upgrade && apk add nodejs npm
-
 
 WORKDIR /opt/blessyou
 COPY . .
