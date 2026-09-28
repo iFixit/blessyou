@@ -6,12 +6,14 @@ var Q    = require('q')
    ,parserOptions = require('./parser-options.js')
    ,sessions = require('./sessions.js')()
    ,DummyCache = require('./dummy-cache.js')
+   ,accessLog = require('./access-log.js')
    ,l    = require('./log.js').log;
 
 module.exports = function(config) {
    var cache = null;
 
    var app = connect()
+   .use(accessLog)
    .use(denyNonPosts)
    .use(receiveBody)
    .use(connect.query())
@@ -41,7 +43,6 @@ module.exports = function(config) {
    }
 
    function receiveBody(req, res, next) {
-      req.time = process.hrtime();
       getBody(req).then(function(body) {
          req.body = body;
          next();
@@ -77,7 +78,6 @@ module.exports = function(config) {
    function convertLess(req, res, next) {
       getCssForRequest(req, res)
       .then(outputCss(req, res))
-      .then(logRequest(req, res))
       .catch(handleFailure(req, res));
    }
 
@@ -139,21 +139,5 @@ module.exports = function(config) {
       return function(css) {
          return cache.setCachedResponse(req, css)
       };
-   }
-
-   function logRequest(req, res) {
-      return function(css) {
-         var time = process.hrtime(req.time);
-         var ms = time[0]*1000 + time[1] / 1e6
-         var outLength = Buffer.byteLength(css)
-         var sizeMsg = round(req.body.length/1000) + "k -> " + round(outLength/1000) + "k"
-         var cacheMsg = req.fromCache ? 'hit' : 'miss';
-         l("("+round(ms)+"ms - "+sizeMsg+" cache:"+cacheMsg+"):" + req.url)
-      }
-   }
-
-   function round(num, places) {
-      var scale = Math.pow(10, places === undefined ? 1: places)
-      return Math.round(num*scale)/scale
    }
 }

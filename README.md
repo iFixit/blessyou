@@ -62,3 +62,14 @@ Less parser options can be passed through using this psedocode:
     options = encodeUriComponent(JSON.stringify(options));
     var css = post("localhost:8000/?options=" + options, lessCode)
 
+
+### Access Log
+
+Every request is logged to stdout once its response is finished, in the
+[Combined Log Format][clf] followed by the response time, the size of the
+posted less in bytes and whether the css came from the cache (`hit`, `miss`,
+or `-` when no cache lookup happened):
+
+    127.0.0.1 - - [28/Sep/2026:21:23:36 +0000] "POST /?session=e7e7872a072251c1827a210b585d0745 HTTP/1.1" 200 24 "-" "curl/8.5.0" 2.8ms in:13 cache:hit
+
+[clf]: https://httpd.apache.org/docs/current/logs.html#combined
